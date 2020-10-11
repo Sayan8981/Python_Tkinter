@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 
 root = Tk()
 root.title("Learn to code.....!!")
@@ -17,6 +18,12 @@ btn_variable.set(1)
 
 def clicked(value):
     print ("Option %s clicked!"%str(value))
+    #showwarning, showerror, askquestion, askokcancel, askyesno
+    response = messagebox.askyesno("This is messagebox", "Option %s clicked!"%str(value))
+    if response == 1:
+    	Label(frame, text= "You clicked Yes!").grid(row=8, column=0)
+    else:
+        Label(frame, text= "You clicked No!").grid(row=8, column=0)	
 
 #radio buttons:
 for i in range(1,6):
