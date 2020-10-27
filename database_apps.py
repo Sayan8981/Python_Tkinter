@@ -29,30 +29,47 @@ class create_db_apps:
 
     def clear_textbox(self):
         self.f_name.delete(0, END) 
-        self.l_name.delete(0, END) 
+        self.l_name.delete(0, END)  
         self.address.delete(0, END) 
         self.city.delete(0, END) 
         self.zipcode.delete(0, END)  
 
     def show_db_records(self):
+        self.mysql_connection()
         self.record_window()
         self.count = 0
         print_records = ''
         print ("showing all records..................")
-        self.cur.execute("SELECT * from tracking")
-        self.result = self.cur.fetchall()
-        if self.result:
-            for records in self.result:
-                self.count += 1
-                print_records += str(self.count) + ". " + str(records) + "\n"
-            print ("\n" + print_records)
-            records_label = Label(self.record, text=print_records)
-            records_label.grid(row=0, column=0, columnspan=2)
+        try:
+            self.cur.execute("SELECT * from tracking")
+            self.result = self.cur.fetchall()
+            if self.result:
+                for records in self.result:
+                    self.count += 1
+                    print_records += str(self.count) + ". " + str(records) + "\n"
+                print ("\n" + print_records)
+                records_label = Label(self.record, text=print_records)
+                records_label.grid(row=0, column=0, columnspan=2)
+            else:
+                print ("No records found ......................") 
+                messagebox.showwarning("showinfo", "Empty records!")                                    
+        except Exception:
+            print ("Exception found show_db_records......................") 
+            messagebox.showwarning("showinfo", "Exception in fetching !")            
+            
+    def delete(self):
+        print ("deleted button clicked")
+        try:
+            self.cur.execute("DELETE from tracking where entry_id = %s"%self.delete_id.get())
+            self.connection.close()
+            self.clear_textbox()            
+        except Exception as Error:
+            print ("exception in deletion............", type(Error))            
     
     def submit(self):
         print("submmitted button clicked")
         try:
-            if self.f_name.get() and self.l_name.get() and self.address.get() and self.city.get() and self.zipcode.get():
+            if self.f_name.get() and self.address.get() and self.city.get() and self.zipcode.get():
                 self.cur.execute("INSERT INTO tracking (first_name, last_name, address, city, zipcode) values (%s,%s,%s,%s,%s)",(self.f_name.get(),self.l_name.get(),self.address.get(),self.city.get(),self.zipcode.get()))
                 self.connection.close()
                 self.clear_textbox()                
@@ -64,7 +81,7 @@ class create_db_apps:
 
     def entry_label(self):
         self.f_name_label = Label(self.root, text="First Name")
-        self.f_name_label.grid(row=0, column=0)
+        self.f_name_label.grid(row=0, column=0, padx=10, pady=(10, 0))
 
         self.l_name_label = Label(self.root, text="Last Name")
         self.l_name_label.grid(row=1, column=0)
@@ -77,10 +94,13 @@ class create_db_apps:
 
         self.zipcode_label = Label(self.root, text="Zipcode")
         self.zipcode_label.grid(row=4, column=0) 
+        
+        self.delete_id_label = Label(self.root, text="Delete Entry")
+        self.delete_id_label.grid(row=10, column=0)
 
     def entry_textbox(self):
         self.f_name = Entry(self.root, width=30)
-        self.f_name.grid(row=0, column=1, padx=10)
+        self.f_name.grid(row=0, column=1, padx=10, pady=(10, 0))
 
         self.l_name = Entry(self.root, width=30)
         self.l_name.grid(row=1, column=1)
@@ -93,21 +113,31 @@ class create_db_apps:
  
         self.zipcode = Entry(self.root, width=30)
         self.zipcode.grid(row=4, column=1)
+        
+        self.delete_id = Entry(self.root, width=30)
+        self.delete_id.grid(row=10, column=1)
 
-    def click_to_buttons(self):
-        self.entry_label()
-        self.entry_textbox()
+    def add_records(self):
         self.mysql_connection()
         self.submit_btn = Button(self.root, text="Add record to database", command=self.submit)
         self.submit_btn.grid(row=6, column=0, columnspan=2, padx=15, pady=10, ipadx=100) 
         
-    def show_records(self):    
+    def show_records(self): 
+        self.mysql_connection()    
         self.show_record_btn = Button(self.root, text="Show records", command=self.show_db_records)
         self.show_record_btn.grid(row=8, column=0, columnspan=2, padx=15, pady=10, ipadx=100)        
         
+    def delete_records(self):
+        self.mysql_connection()        
+        self.delete_record_btn = Button(self.root, text="Delete record", command=self.delete)
+        self.delete_record_btn.grid(row=11, column=0, columnspan=2, padx=15, pady=10, ipadx=100)            
+        
     def main(self):
-        self.click_to_buttons()
+        self.entry_label()
+        self.entry_textbox()        
+        self.add_records()
         self.show_records()
+        self.delete_records()
         self.root.mainloop()                         
     
 if __name__ == '__main__':
